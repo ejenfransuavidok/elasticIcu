@@ -1,0 +1,3 @@
+class TIcu : public V_Icu{
+    
+}

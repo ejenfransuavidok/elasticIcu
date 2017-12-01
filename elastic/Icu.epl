@@ -1,0 +1,77 @@
+include_file "/Projects/Studio/ElastLib/TUtf8.epl"
+include_file "/Projects/Studio/ElastLib/TIcu.epl"
+//--------------
+
+TIcu @icu;
+
+string lower = icu->ToLow("Türkiye Cumhuriyet Merkez Bankası (TCMB) bünyesinde faaliyette bulunan Bankalararası Para Piyasası’nda bankaların borç alabilme limitleri (BAL) 22 Kasım 2017 tarihinden geçerli olmak üzere gecelik vadede yapılan işlemler için (O/N) sıfıra düşürülmüştür.");
+string upper = icu->ToUp("Türkiye Cumhuriyet Merkez Bankası (TCMB) bünyesinde faaliyette bulunan Bankalararası Para Piyasası’nda bankaların borç alabilme limitleri (BAL) 22 Kasım 2017 tarihinden geçerli olmak üzere gecelik vadede yapılan işlemler için (O/N) sıfıra düşürülmüştür.");
+string upper2 = icu->ToUp("");
+print "lower -> " . lower . "\n";
+print "\nupper -> " . upper . "\n";
+print "\nupper -> " . upper2 . "\n";
+icu->SplitSimple(upper, "\\s", 1000);
+print "\n" . icu->NormalizeNFC("Äffin") . "\n";
+print "\n". icu->NormalizeNFC("Ёлкааайёёёёёёёёёёёёёёёёёёё") . "\n";
+print "\n" . icu->NormalizeNFD("Äffin") . "\n";
+print "\n". icu->NormalizeNFD("Ёлкааайёёёёёёёёёёёёёёёёёёё") . "\n";
+print "\n" . icu->NormalizeNFKC("Äffin") . "\n";
+print "\n". icu->NormalizeNFKD("Ёлкааайёёёёёёёёёёёёёёёёёёё") . "\n";
+print "\n" . icu->NormalizeNFKCCF("Äffin") . "\n";
+print "\n". icu->NormalizeNFKCCF("Ёлкааайёёёёёёёёёёёёёёёёёёё") . "\n";
+print "\n";
+
+
+int  Src,Dst;
+string s ="Über";
+string d;
+TUtf8  @Utf8;
+Src = 0x61;
+print "Sym before: " . Src . "\n";
+Dst = Utf8->SymUp(Src);
+print "Sym after toupper: " . Dst . "\n";
+Src = Utf8->SymLow(Dst);
+print "Sym after lower: " . Src . "\n";
+print "Map before: " . s . "\n";
+//int f=fopen("bug.log","w");
+//fprint(f,"Str:%s\n",s);
+//fclose(f);
+Utf8->Normalize(s,d, UTF8PROC_NLF2LS);
+print "Map after:" .d. "\n";
+
+string StrA = "ёлка";
+string StrB;
+Utf8->StrUp(StrA, StrB);
+print  StrA . " -> " . StrB . "\n";
+string StrC;
+Utf8->StrLow(StrB, StrC);
+print  StrB . " -> " . StrC . "\n";
+
+if (Utf8->Map(StrA,StrB, UTF8PROC_NULLTERM | UTF8PROC_STABLE | UTF8PROC_COMPOSE | UTF8PROC_COMPAT | UTF8PROC_STRIPMARK))
+  print "Can not understand this string\n";
+else
+  print "Map after1:" .StrB. "\n";
+if(Utf8->Map(s,StrB, UTF8PROC_NULLTERM | UTF8PROC_STABLE | UTF8PROC_COMPOSE | UTF8PROC_COMPAT | UTF8PROC_STRIPMARK))
+  print "Can not understand this string\n";
+else
+  print "Map after2:" .StrB. "\n";
+//Utf8->Map(s,StrB, UTF8PROC_NULLTERM | UTF8PROC_STABLE | UTF8PROC_COMPOSE);
+//print "Map after3:" .StrB. "\n";
+//Utf8->Map(s,StrB, UTF8PROC_NULLTERM | UTF8PROC_STABLE | UTF8PROC_DECOMPOSE);
+//print "Map after4:" .StrB. "\n";
+
+//Class->Map(s,d,Flags);
+string TstIs = "A1aб";
+int Sz = 4;
+int Sym = s_Utf32z(TstIs, 1, Sz);
+
+int Res;
+Res = Utf8->SymIsLetter(Sym);
+print "Ret isLetter:" .Res. "\n";
+Sym = s_Utf32z(TstIs, 1, Sz);
+Res = Utf8->SymIsDigit(Sym);
+print "Ret isDigit:" .Res. "\n";
+Res = Utf8->SymCategory(Sym);
+print "Category:" .Res. "\n";
+
+print "==END==\n";
