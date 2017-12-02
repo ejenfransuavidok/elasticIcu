@@ -89,7 +89,7 @@ void allocAndCopyStr(char *dest, char *src, int length) {
 	strcpy(dest, src);
 }
 
-void commonToUpToUpper(int **Adr, int NumOfOpr, DWORD *DataSeg, icuProcedures proc) {
+void commonToUpToLower(int **Adr, int NumOfOpr, DWORD *DataSeg, icuProcedures proc) {
 	DWORD **Src;
 	V_Icu *Class  = (V_Icu*)Adr[2][2];
 	/**
@@ -143,11 +143,11 @@ void commonToUpToUpper(int **Adr, int NumOfOpr, DWORD *DataSeg, icuProcedures pr
 }
 
 void V_Icu_ToUp(int **Adr, int NumOfOpr, DWORD *DataSeg) {
-	commonToUpToUpper(Adr, NumOfOpr, DataSeg, DO_TOUP);
+	commonToUpToLower(Adr, NumOfOpr, DataSeg, DO_TOUP);
 }
 
 void V_Icu_ToLow(int **Adr, int NumOfOpr, DWORD *DataSeg) {
-	commonToUpToUpper(Adr, NumOfOpr, DataSeg, DO_TOLOWER);
+	commonToUpToLower(Adr, NumOfOpr, DataSeg, DO_TOLOWER);
 }
 
 void normalizeCommon(int **Adr, int NumOfOpr, DWORD *DataSeg, normalizeConstants nc) {
@@ -317,13 +317,13 @@ const char *Tbl[] = {"V_Icu"};
  */
 Binary_Methods_STRUC V_Icu_STRUC_Methods[] =
 {
-    "string ptr ToUp  string ptr", &V_Icu_ToUp,
-    "string ptr ToLow string ptr", &V_Icu_ToLow,
+	"string ptr ToUp  string ptr", &V_Icu_ToUp,
+	"string ptr ToLow string ptr", &V_Icu_ToLow,
 	/**
-	* Use name="nfc" and UNORM2_COMPOSE/UNORM2_DECOMPOSE for Unicode standard NFC/NFD.
-	* Use name="nfkc" and UNORM2_COMPOSE/UNORM2_DECOMPOSE for Unicode standard NFKC/NFKD.
-	* Use name="nfkc_cf" and UNORM2_COMPOSE for Unicode standard NFKC_CF=NFKC_Casefold.
-	*/
+	 * Use name="nfc" and UNORM2_COMPOSE/UNORM2_DECOMPOSE for Unicode standard NFC/NFD.
+	 * Use name="nfkc" and UNORM2_COMPOSE/UNORM2_DECOMPOSE for Unicode standard NFKC/NFKD.
+	 * Use name="nfkc_cf" and UNORM2_COMPOSE for Unicode standard NFKC_CF=NFKC_Casefold.
+	 */
 	"string ptr NormalizeNFC string ptr", &V_Icu_NormalizeNFC,
 	"string ptr NormalizeNFD string ptr", &V_Icu_NormalizeNFD,
 	"string ptr NormalizeNFKC string ptr", &V_Icu_NormalizeNFKC,
@@ -332,7 +332,7 @@ Binary_Methods_STRUC V_Icu_STRUC_Methods[] =
 	"int SplitSimple string ptr string ptr int ptr", &V_Icu_SplitSimple,
 	"int GetLastError", &V_Icu_GetLastError,
 	"string ptr GetLastErrorName", &V_Icu_GetLastErrorName,
-    NULL
+	NULL
 };
 
 Binary_Methods_STRUC *MethodStrucTable[] = {
