@@ -45,7 +45,7 @@
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.base.1758422423" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.base">
 								<option defaultValue="true" id="gnu.cpp.link.option.shared.2000872835" name="Shared (-shared)" superClass="gnu.cpp.link.option.shared" valueType="boolean"/>
-								<option id="gnu.cpp.link.option.flags.995279566" name="Linker flags" superClass="gnu.cpp.link.option.flags" value="-pthread -m32" valueType="string"/>
+								<option id="gnu.cpp.link.option.flags.995279566" name="Linker flags" superClass="gnu.cpp.link.option.flags" value="-pthread -m32 -static" valueType="string"/>
 								<option id="gnu.cpp.link.option.paths.836067001" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="/usr/lib"/>
 								</option>
