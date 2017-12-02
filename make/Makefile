@@ -1,6 +1,6 @@
 CXX   = g++ 
 CC    = gcc
-LDFLAGS += -pthread -m32 -shared -licui18n -licuuc -licudata -licuio
+LDFLAGS += -pthread -m32 -shared -static -licui18n -licuuc -licudata -licuio
 debug: CFLAGS  = --std=c++11 -g3 -MD -Wall -m32 -masm=intel
 release: CFLAGS  = -m32
 debug: exec
