@@ -32,7 +32,7 @@
 								<option id="gnu.cpp.compiler.option.debugging.prof.1517746025" name="Generate prof information (-p)" superClass="gnu.cpp.compiler.option.debugging.prof" value="false" valueType="boolean"/>
 								<option id="gnu.cpp.compiler.option.warnings.allwarn.1009468813" name="All warnings (-Wall)" superClass="gnu.cpp.compiler.option.warnings.allwarn" value="false" valueType="boolean"/>
 								<option id="gnu.cpp.compiler.option.dialect.std.90984635" name="Language standard" superClass="gnu.cpp.compiler.option.dialect.std" value="gnu.cpp.compiler.dialect.default" valueType="enumerated"/>
-								<option id="gnu.cpp.compiler.option.other.other.1941952533" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" value="-c --std=c++11 -g3 -MD -Wall -m32 -masm=intel" valueType="string"/>
+								<option id="gnu.cpp.compiler.option.other.other.1941952533" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" value="-c --std=c++11 -g3 -MD -Wall -m32 -masm=intel -DU_I18N_IMPLEMENTATION" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.666583474" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.compiler.base.2110276167" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.base">
@@ -45,15 +45,16 @@
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.base.1758422423" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.base">
 								<option defaultValue="true" id="gnu.cpp.link.option.shared.2000872835" name="Shared (-shared)" superClass="gnu.cpp.link.option.shared" valueType="boolean"/>
-								<option id="gnu.cpp.link.option.flags.995279566" name="Linker flags" superClass="gnu.cpp.link.option.flags" value="-pthread -m32 -static" valueType="string"/>
+								<option id="gnu.cpp.link.option.flags.995279566" name="Linker flags" superClass="gnu.cpp.link.option.flags" value="-pthread -m32" valueType="string"/>
 								<option id="gnu.cpp.link.option.paths.836067001" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
-									<listOptionValue builtIn="false" value="/usr/lib"/>
+									<listOptionValue builtIn="false" value="/home/vidok/Downloads/icu/60/icu/source/lib"/>
 								</option>
 								<option id="gnu.cpp.link.option.libs.619502180" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
-									<listOptionValue builtIn="false" value="icuuc"/>
-									<listOptionValue builtIn="false" value="icui18n"/>
-									<listOptionValue builtIn="false" value="icudata"/>
-									<listOptionValue builtIn="false" value="icuio"/>
+									<listOptionValue builtIn="false" value=":libicui18n.a"/>
+									<listOptionValue builtIn="false" value=":libicuuc.a"/>
+									<listOptionValue builtIn="false" value=":libicutu.a"/>
+									<listOptionValue builtIn="false" value=":libicuio.a"/>
+									<listOptionValue builtIn="false" value=":libicudata.a"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1253036189" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
@@ -73,7 +74,7 @@
 							<option id="gnu.cpp.compiler.option.debugging.prof.160433243" name="Generate prof information (-p)" superClass="gnu.cpp.compiler.option.debugging.prof" value="false" valueType="boolean"/>
 							<option id="gnu.cpp.compiler.option.warnings.allwarn.1800759971" name="All warnings (-Wall)" superClass="gnu.cpp.compiler.option.warnings.allwarn" value="false" valueType="boolean"/>
 							<option id="gnu.cpp.compiler.option.dialect.std.424098273" name="Language standard" superClass="gnu.cpp.compiler.option.dialect.std" value="gnu.cpp.compiler.dialect.default" valueType="enumerated"/>
-							<option id="gnu.cpp.compiler.option.other.other.2125141869" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" value="-c --std=c++11 -g3 -MD -Wall -m32 -masm=intel" valueType="string"/>
+							<option id="gnu.cpp.compiler.option.other.other.2125141869" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" value="-c --std=c++11 -g3 -MD -Wall -m32 -masm=intel -DU_I18N_IMPLEMENTATION" valueType="string"/>
 							<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.834520411" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 						</tool>
 						<tool announcement="Invoking: Resource Custom Build Step" command="" customBuildStep="true" id="org.eclipse.cdt.managedbuilder.ui.rcbs.1706998307" name="Resource Custom Build Step">

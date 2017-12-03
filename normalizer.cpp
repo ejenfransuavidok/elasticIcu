@@ -13,8 +13,14 @@ NormSample::NormSample(UErrorCode &errorCode)
 
 // Normalize a string.
 UnicodeString NormSample::toNormalize(const char *s, char *key, UNormalization2Mode mode, UErrorCode &errorCode) {
-	const Normalizer2 *normalizer = Normalizer2::getInstance(NULL, key, mode, errorCode);
-	UnicodeString result = normalizer->normalize(s, errorCode);
+	UErrorCode uErrorCode = U_ZERO_ERROR;
+	const Normalizer2 *normalizer = Normalizer2::getInstance(NULL, key, mode, uErrorCode);
+	if(U_FAILURE(uErrorCode)) {
+		errorCode = uErrorCode;
+		return (UnicodeString)-1;
+	}
+	const UnicodeString src(s);
+	UnicodeString result = normalizer->normalize(src, errorCode);
 	return result;
 }
 

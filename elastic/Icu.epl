@@ -11,16 +11,26 @@ print "lower -> " . lower . "\n";
 print "\nupper -> " . upper . "\n";
 print "\nupper -> " . upper2 . "\n";
 icu->SplitSimple(upper, "\\s", 1000);
-print "\n" . icu->NormalizeNFC("Äffin") . "\n";
-print "\n". icu->NormalizeNFC("Ёлкааайёёёёёёёёёёёёёёёёёёё") . "\n";
-print "\n" . icu->NormalizeNFD("Äffin") . "\n";
-print "\n". icu->NormalizeNFD("Ёлкааайёёёёёёёёёёёёёёёёёёё") . "\n";
-print "\n" . icu->NormalizeNFKC("Äffin") . "\n";
-print "\n". icu->NormalizeNFKD("Ёлкааайёёёёёёёёёёёёёёёёёёё") . "\n";
-print "\n" . icu->NormalizeNFKCCF("Äffin") . "\n";
-print "\n". icu->NormalizeNFKCCF("Ёлкааайёёёёёёёёёёёёёёёёёёё") . "\n";
+
+print       icu->NormalizeNFC("Äffin");
+print "\n". icu->NormalizeNFC("Ёлкааайёёёёёёёёёёёёёёёёёёё");
+print "\n" . icu->NormalizeNFD("Äffin");
+print "\n". icu->NormalizeNFD("Ёлкааайёёёёёёёёёёёёёёёёёёё");
+print "\n" . icu->NormalizeNFKC("Äffin");
+print "\n". icu->NormalizeNFKD("Ёлкааайёёёёёёёёёёёёёёёёёёё");
+print "\n" . icu->NormalizeNFKCCF("Äffin");
+print "\n". icu->NormalizeNFKCCF("Ёлкааайёёёёёёёёёёёёёёёёёёё");
 print "\n";
 
+//icu->SplitUnicodeString("Здорово            Кастрома хеллоу ворлд ат та та цццу", 0, 10000);
+
+
+icu->SplitUnicodeString("新华社杭州12月3日电第四届世界互联网大会3日上午在浙江省乌镇开幕。国家主席习近平发来贺信，代表中国政府和中国人民，并以他个人的名义，向大会的召开致以热烈的祝贺，向出席会议的各国代表、国际机构负责人和专家学者、企业家等各界人士表示诚挚的欢迎，希望大家集思广益、增进共识，深化互联网和数字经济交流合作，让互联网发展成果更好造福世界各国人民", 0, 10000);
+print "\n" . icu->GetLastError() . "\n";
+int i;
+while(i < 33) {
+    print "\n" . icu->GetSplitStringByIndex(0, i++) . "\n";
+}
 
 int  Src,Dst;
 string s ="Über";
