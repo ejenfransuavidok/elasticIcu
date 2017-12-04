@@ -7,9 +7,10 @@ TIcu @icu;
 string lower = icu->ToLow("Türkiye Cumhuriyet Merkez Bankası (TCMB) bünyesinde faaliyette bulunan Bankalararası Para Piyasası’nda bankaların borç alabilme limitleri (BAL) 22 Kasım 2017 tarihinden geçerli olmak üzere gecelik vadede yapılan işlemler için (O/N) sıfıra düşürülmüştür.");
 string upper = icu->ToUp("Türkiye Cumhuriyet Merkez Bankası (TCMB) bünyesinde faaliyette bulunan Bankalararası Para Piyasası’nda bankaların borç alabilme limitleri (BAL) 22 Kasım 2017 tarihinden geçerli olmak üzere gecelik vadede yapılan işlemler için (O/N) sıfıra düşürülmüştür.");
 string upper2 = icu->ToUp("");
-print "lower -> " . lower . "\n";
-print "\nupper -> " . upper . "\n";
-print "\nupper -> " . upper2 . "\n";
+
+print "lower -> " . lower . " length: " . strlen(lower) . "\n";
+print "\nupper -> " . upper . " length: " . strlen(upper) . "\n";
+print "\nupper2 -> " . upper2 . " length: " . strlen(upper2) . "\n";
 icu->SplitSimple(upper, "\\s", 1000);
 
 print       icu->NormalizeNFC("Äffin");
@@ -20,16 +21,49 @@ print "\n" . icu->NormalizeNFKC("Äffin");
 print "\n". icu->NormalizeNFKD("Ёлкааайёёёёёёёёёёёёёёёёёёё");
 print "\n" . icu->NormalizeNFKCCF("Äffin");
 print "\n". icu->NormalizeNFKCCF("Ёлкааайёёёёёёёёёёёёёёёёёёё");
-print "\n";
-
-//icu->SplitUnicodeString("Здорово            Кастрома хеллоу ворлд ат та та цццу", 0, 10000);
-
 
 icu->SplitUnicodeString("新华社杭州12月3日电第四届世界互联网大会3日上午在浙江省乌镇开幕。国家主席习近平发来贺信，代表中国政府和中国人民，并以他个人的名义，向大会的召开致以热烈的祝贺，向出席会议的各国代表、国际机构负责人和专家学者、企业家等各界人士表示诚挚的欢迎，希望大家集思广益、增进共识，深化互联网和数字经济交流合作，让互联网发展成果更好造福世界各国人民", 0, 10000);
-print "\n" . icu->GetLastError() . "\n";
-int i;
-while(i < 33) {
-    print "\n" . icu->GetSplitStringByIndex(0, i++) . "\n";
+print "\n" . icu->GetLastErrorIcu() . " buffer size: " . icu->GetSplitBufferSize(0) . "\n";
+for(int i=0; i < icu->GetSplitBufferSize(0); i++) {
+    string str = icu->GetSplitStringByIndex(0, i);
+    if(icu->GetLastErrorIcu() == 0) {
+        print "\n" . i . ": " . str;
+    }
+    else {
+        print "\n" . "error: " . icu->GetLastErrorNameIcu() . "\n";
+        break;
+    }
+}
+print "\n";
+icu->SplitBufferFree(0);
+print "\n" . icu->GetLastErrorNameIcu() . "\n";
+print "\n" . "buffer size: " . icu->GetSplitBufferSize(0) . " error: " . icu->GetLastErrorNameIcu() . "\n";
+icu->SplitUnicodeString("新华社杭州12月3日电第四届世界互联网大会3日上午在浙江省乌镇开幕。国家主席习近平发来贺信，代表中国政府和中国人民，并以他个人的名义，向大会的召开致以热烈的祝贺，向出席会议的各国代表、国际机构负责人和专家学者、企业家等各界人士表示诚挚的欢迎，希望大家集思广益、增进共识，深化互联网和数字经济交流合作，让互联网发展成果更好造福世界各国人民", 0, 10000);
+print "\n" . "buffer size: " . icu->GetSplitBufferSize(0) . " error: " . icu->GetLastErrorNameIcu() . "\n";
+
+string s1 = "新华社杭州12月3日电第四届世界互联网大会3日上午在浙江省乌镇开幕。国家主席习近平发来贺信，代表中国政府和中国人民，并以他个人的名义，向大会的召开致以热烈的祝贺，向出席会议的各国代表、国际机构负责人和专家学者、企业家等各界人士表示诚挚的欢迎，希望大家集思广益、增进共识，深化互联网和数字经济交流合作，让互联网发展成果更好造福世界各国人民";
+variant splittedString_s1;
+int retSplit_s1 = icu->splitString(s1, splittedString_s1);
+print "\ncount = " . count(splittedString_s1) . " return = " . retSplit_s1 . "\n";
+for(i=0; i<count(splittedString_s1); i++) {
+    print splittedString_s1[i] . "\n";
+}
+
+string s2 = "Судя по публикуемым отчетам о потерях сирийцев и их союзников, они практически такие же, как у иракской армии во время штурма Мосула. Во всяком случае, среднедневные потери очень близки. При этом Абу-Камаль - не Мосул, да и обороняют его совсем не такие силы боевиков. По всей видимости, речь о том, что силы сирийцев крайне малы для решения даже такой задачи, отсюда и блёклость результата.";
+variant splittedString_s2;
+int retSplit_s2 = icu->splitString(s2, splittedString_s2);
+print "\ncount = " . count(splittedString_s2) . " return = " . retSplit_s2 . "\n";
+for(i=0; i<count(splittedString_s2); i++) {
+    print splittedString_s2[i] . "\n";
+}
+
+string s3 = "Find the abc in this string";
+string matcher_s3 = "abc+";
+variant regexpArr_s3;
+int retRegexp_s3 = icu->regexpString(s3, matcher_s3, regexpArr_s3);
+print "\ncount = " . count(regexpArr_s3) . " return = " . retRegexp_s3 . " error: " . icu->GetLastErrorNameIcu() . "\n";
+for(i=0; i<count(regexpArr_s3); i++) {
+    print regexpArr_s3[i] . "\n";
 }
 
 int  Src,Dst;

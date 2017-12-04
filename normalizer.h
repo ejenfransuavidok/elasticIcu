@@ -29,10 +29,6 @@ public:
   // In practice, almost all strings pass the FCD test, so it might make sense to
   // test for it and only normalize when necessary, rather than always normalizing.
   UnicodeString processText(const UnicodeString &s, char *key, UNormalization2Mode mode, UErrorCode &errorCode);
-
-private:
-  const Normalizer2 &nfkc;
-  const Normalizer2 &fcd;
 };
 
 #endif /* NORMALIZER_H_ */

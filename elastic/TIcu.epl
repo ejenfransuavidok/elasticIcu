@@ -1,3 +1,45 @@
-class TIcu : public V_Icu{
-    
+#define TICU_ERROR 1000000000
+
+class TIcu : public V_Icu {
+}
+
+int TIcu::icuCommon(int handle, variant ptr retArr) {
+    if(GetLastErrorIcu() != 0) {
+        return TICU_ERROR;
+    }
+    for(int i=0; i<GetSplitBufferSize(handle); i++) {
+        string next = GetSplitStringByIndex(handle, i);
+        if(GetLastErrorIcu() != 0) {
+            return TICU_ERROR;
+        }
+        int curCnt = count(retArr);
+        retArr[curCnt] = next;
+    }
+    SplitBufferFree(handle);
+    if(GetLastErrorIcu() != 0) {
+        return TICU_ERROR;
+    }
+    return 0;
+}
+
+int TIcu::splitString(string ptr s, variant ptr retArr) {
+    int handle = GetSplitBufferRandomId();
+    /**
+     * @string
+     * @handle
+     * @capacity
+     */
+    SplitUnicodeString(s, handle, 10000);
+    return icuCommon(handle, retArr);
+}
+
+int TIcu::regexpString(string ptr s, string ptr matcher, variant ptr retArr) {
+    int handle = GetSplitBufferRandomId();
+    /**
+     * @string
+     * @matcher
+     * @handle
+     */
+    RegexUnicodeString(s, matcher, handle);
+    return icuCommon(handle, retArr);
 }

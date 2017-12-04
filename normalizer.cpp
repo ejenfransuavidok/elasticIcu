@@ -7,8 +7,6 @@
 #include "normalizer.h"
 
 NormSample::NormSample(UErrorCode &errorCode)
-		: 		nfkc(*Normalizer2::getNFDInstance(errorCode)),
-				fcd(*Normalizer2::getInstance(NULL, "nfc", UNORM2_DECOMPOSE, errorCode))
 {}
 
 // Normalize a string.

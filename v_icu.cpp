@@ -30,6 +30,8 @@
 #include <unicode/regex.h>
 
 #include <map>
+#include <ctime>
+#include <cstdlib>
 
 #include "normalizer.h"
 
@@ -85,7 +87,9 @@ typedef enum myErrorCode {
 	SPLITBUFFER_OUT_OF_MEMORY = MYERROR_START+3,
 	SPLITBUFFER_UNDEFINED_ERROR = MYERROR_START+4,
 	SPLITBUFFER_UNDEFINED_ID = MYERROR_START+5,
-	SPLITBUFFER_STRING_DOES_NOT_EXISTS = MYERROR_START + 6
+	SPLITBUFFER_STRING_DOES_NOT_EXISTS = MYERROR_START + 6,
+	INPUT_STRING_IS_EMPTY = MYERROR_START + 7,
+	INPUT_REGEXP_IS_EMPTY = MYERROR_START + 8
 }myErrorCode;
 
 std::map<int, UnicodeString**> splitBuffer;
@@ -101,19 +105,23 @@ public:
 
 void returnErrorInt(DWORD *DataSeg) {
 	DataSeg[0] = -1;
-	//DataSeg[1] = -1;
 	DataSeg[3] = -1;
 	return;
 }
 
 void returnErrorStr(DWORD *DataSeg) {
-	DataSeg[0] = -1;
-	DataSeg[1] = -1;
+	char *output;
+	asm("pushad");
+	ralloc_ch(&output, 1);
+	asm("popad");
+	output[0]  = '\0';
+	DataSeg[0] = 0;
+	DataSeg[1] = (DWORD)output;
 	DataSeg[3] = -1;
 	return;
 }
 
-UErrorCode prepareBuffer(int id, int capacity) {
+UErrorCode prepareSplitBuffer(int id, int capacity) {
 	std::map<int, UnicodeString**>::const_iterator got = splitBuffer.find (id);
 	if(got != splitBuffer.end()) {
 		return (UErrorCode)SPLITBUFFER_INDEX_ALREADY_EXISTS;
@@ -163,7 +171,7 @@ UErrorCode listWordBoundaries(const UnicodeString& s, int id, int capacity) {
     if(locale.isBogus() == TRUE){
     	return (UErrorCode)LOCALE_BOGUS;
     }
-    status = prepareBuffer(id, capacity);
+    status = prepareSplitBuffer(id, capacity);
     if(status != U_ZERO_ERROR) {
     	return status;
     }
@@ -460,7 +468,7 @@ void V_Icu_GetSplitBufferSize(int **Adr, int NumOfOpr, DWORD *DataSeg) {
 		i++;
 	}
 	Class->errorCode = U_ZERO_ERROR;
-	DataSeg[3] = i - 1;
+	DataSeg[3] = i;
 }
 
 /**
@@ -488,6 +496,71 @@ void V_Icu_SplitBufferFree(int **Adr, int NumOfOpr, DWORD *DataSeg) {
 	}
 	delete [] stringlist;
 	stringlist = 0;
+	DataSeg[3] = 0;
+}
+
+/**
+ * return int
+ */
+void V_Icu_GetSplitBufferRandomId(int **Adr, int NumOfOpr, DWORD *DataSeg) {
+	int random_integer = rand();
+	std::map<int, UnicodeString**>::const_iterator got = splitBuffer.find (random_integer);
+	while(got != splitBuffer.end()) {
+		random_integer = rand();
+		got = splitBuffer.find (random_integer);
+	}
+	DataSeg[3] = random_integer;
+}
+
+/**
+ * return int
+ */
+void V_Icu_RegexUnicodeString(int **Adr, int NumOfOpr, DWORD *DataSeg) {
+	DWORD **Str, **RegexpStr, **Id;
+	char *string, *regexpString;
+	int id;
+	V_Icu *Class  = (V_Icu*)Adr[2][2];
+	Str = (DWORD **)Adr[4+0];
+	RegexpStr = (DWORD **)Adr[4+1];
+	Id = (DWORD **)Adr[4+2];
+	string = (char *)Str[1];
+	regexpString = (char *)RegexpStr[1];
+	id = (int)Id[0];
+	UErrorCode status = U_ZERO_ERROR;
+	UnicodeString ustring = UnicodeString(string);
+	UnicodeString uregexp = UnicodeString(regexpString);
+	if(ustring.length() == 0) {
+		Class->errorCode = (UErrorCode)INPUT_STRING_IS_EMPTY;
+		return returnErrorInt(DataSeg);
+	}
+	if(uregexp.length() == 0) {
+		Class->errorCode = (UErrorCode)INPUT_REGEXP_IS_EMPTY;
+		return returnErrorInt(DataSeg);
+	}
+	int capacity = ustring.length();
+	status = prepareSplitBuffer(id, capacity);
+	if(status != U_ZERO_ERROR) {
+		Class->errorCode = status;
+		return returnErrorInt(DataSeg);
+	}
+	UnicodeString **stringlist = splitBuffer[id];
+	RegexMatcher *matcher = new RegexMatcher(uregexp, 0, status);
+	if (U_FAILURE(status)) {
+		Class->errorCode = status;
+		return returnErrorInt(DataSeg);
+	}
+	matcher->reset(ustring);
+	int counter = 0;
+	while (matcher->find()) {
+	   // We found a match.
+	   int startOfMatch = matcher->start(status);
+	   int endOfMatch = matcher->end(status);
+	   if(U_FAILURE(status)) {
+		   Class->errorCode = status;
+		   return returnErrorInt(DataSeg);
+	   }
+	   stringlist[counter++] = new UnicodeString(ustring, startOfMatch, endOfMatch - startOfMatch);
+	}
 	DataSeg[3] = 0;
 }
 
@@ -548,8 +621,10 @@ Binary_Methods_STRUC V_Icu_STRUC_Methods[] =
 	"string ptr GetSplitStringByIndex int ptr int ptr", &V_Icu_GetSplitStringByIndex,
 	"int SplitBufferFree int ptr", &V_Icu_SplitBufferFree,
 	"int GetSplitBufferSize int ptr", &V_Icu_GetSplitBufferSize,
-	"int GetLastError", &V_Icu_GetLastError,
-	"string ptr GetLastErrorName", &V_Icu_GetLastErrorName,
+	"int GetSplitBufferRandomId", &V_Icu_GetSplitBufferRandomId,
+	"int RegexUnicodeString string ptr string ptr int ptr", &V_Icu_RegexUnicodeString,
+	"int GetLastErrorIcu", &V_Icu_GetLastError,
+	"string ptr GetLastErrorNameIcu", &V_Icu_GetLastErrorName,
 	NULL
 };
 
@@ -564,7 +639,7 @@ V_Icu::V_Icu() : errorCode(U_ZERO_ERROR)
 	errorName[SPLITBUFFER_INDEX_ALREADY_EXISTS] = "Error index already exists";
 	errorName[SPLITBUFFER_OUT_OF_MEMORY] = "Error out of memory during buffer prepare";
 	errorName[SPLITBUFFER_UNDEFINED_ERROR] = "Error undefined error during buffer prepare";
-	errorName[SPLITBUFFER_UNDEFINED_ID] = "Error splitbuffer undefined id";
+	errorName[SPLITBUFFER_UNDEFINED_ID] = "Error buffer undefined id";
 	errorName[SPLITBUFFER_STRING_DOES_NOT_EXISTS] = "Error requested string does not exists";
 }
 
@@ -587,7 +662,8 @@ V_ICU_API ConstructProc GetConstructor(int i){
 
 // Вызывается по загрузке .so
 V_ICU_API Binary_Methods_STRUC  **Init(const char ***Names, ELAST_FUNC *FuncTable){
-    Names[0] = Tbl;
+	srand((unsigned)time(0));
+	Names[0] = Tbl;
     for(int i=0; ; i++){
         if(FuncTable[i].Name == NULL)break;
         if(strcmp(FuncTable[i].Name, "GetFuncOff") == 0){
