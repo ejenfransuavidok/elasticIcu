@@ -76,13 +76,16 @@ typedef enum normalizeConstants {
 }normalizeConstants;
 
 #define MYERROR_START -100000
+#define EMPTY_STRING -1
+#define LAST_STRING -2
 
 typedef enum myErrorCode {
 	LOCALE_BOGUS = MYERROR_START+1,
 	SPLITBUFFER_INDEX_ALREADY_EXISTS = MYERROR_START+2,
 	SPLITBUFFER_OUT_OF_MEMORY = MYERROR_START+3,
 	SPLITBUFFER_UNDEFINED_ERROR = MYERROR_START+4,
-	SPLITBUFFER_UNDEFINED_ID = MYERROR_START+5
+	SPLITBUFFER_UNDEFINED_ID = MYERROR_START+5,
+	SPLITBUFFER_STRING_DOES_NOT_EXISTS = MYERROR_START + 6
 }myErrorCode;
 
 std::map<int, UnicodeString**> splitBuffer;
@@ -96,7 +99,14 @@ public:
 	std::map<int, const char*> errorName;
 };
 
-void returnError(DWORD *DataSeg) {
+void returnErrorInt(DWORD *DataSeg) {
+	DataSeg[0] = -1;
+	//DataSeg[1] = -1;
+	DataSeg[3] = -1;
+	return;
+}
+
+void returnErrorStr(DWORD *DataSeg) {
 	DataSeg[0] = -1;
 	DataSeg[1] = -1;
 	DataSeg[3] = -1;
@@ -109,7 +119,14 @@ UErrorCode prepareBuffer(int id, int capacity) {
 		return (UErrorCode)SPLITBUFFER_INDEX_ALREADY_EXISTS;
 	}
 	try {
-		UnicodeString **stringlist = new UnicodeString * [capacity];
+		/**
+		 * last element for set last
+		 */
+		UnicodeString **stringlist = new UnicodeString * [capacity + 1];
+		for(int i=0; i<capacity; i++) {
+			stringlist[i] = (UnicodeString*)EMPTY_STRING;
+		}
+		stringlist[capacity] = (UnicodeString*)LAST_STRING;
 		splitBuffer[id] = stringlist;
 	}
 	catch(std::bad_alloc& ba) {
@@ -175,6 +192,9 @@ UErrorCode listWordBoundaries(const UnicodeString& s, int id, int capacity) {
     delete bi;
 }
 
+/**
+ * return string
+ */
 void commonToUpToLower(int **Adr, int NumOfOpr, DWORD *DataSeg, icuProcedures proc) {
 	DWORD **Src;
 	V_Icu *Class  = (V_Icu*)Adr[2][2];
@@ -193,7 +213,7 @@ void commonToUpToLower(int **Adr, int NumOfOpr, DWORD *DataSeg, icuProcedures pr
 		s->toLower();
 		break;
 	default:
-		return returnError(DataSeg);
+		return returnErrorStr(DataSeg);
 	}
 	/**
 	 * 4 - because UTF-8 can consists of four bites
@@ -202,7 +222,7 @@ void commonToUpToLower(int **Adr, int NumOfOpr, DWORD *DataSeg, icuProcedures pr
 	char *tmp = new char[destCapacity];
 	s->extract(tmp, destCapacity, NULL, Class->errorCode);
 	if(Class->errorCode != U_ZERO_ERROR) {
-		return returnError(DataSeg);
+		return returnErrorStr(DataSeg);
 	}
 	char *output;
 	asm("pushad");
@@ -226,6 +246,9 @@ void V_Icu_ToLow(int **Adr, int NumOfOpr, DWORD *DataSeg) {
 	commonToUpToLower(Adr, NumOfOpr, DataSeg, DO_TOLOWER);
 }
 
+/**
+ * return string
+ */
 void normalizeCommon(int **Adr, int NumOfOpr, DWORD *DataSeg, normalizeConstants nc) {
 	DWORD **Src;
 	V_Icu *Class  = (V_Icu*)Adr[2][2];
@@ -267,7 +290,7 @@ void normalizeCommon(int **Adr, int NumOfOpr, DWORD *DataSeg, normalizeConstants
 	}
 
 	if(U_FAILURE(Class->errorCode)) {
-		return returnError(DataSeg);
+		return returnErrorStr(DataSeg);
 	}
 	/**
 	 * 4 - because UTF-8 can consists of four bites
@@ -276,7 +299,7 @@ void normalizeCommon(int **Adr, int NumOfOpr, DWORD *DataSeg, normalizeConstants
 	char *tmp = new char[destCapacity];
 	result.extract(tmp, destCapacity, NULL, Class->errorCode);
 	if(Class->errorCode != U_ZERO_ERROR) {
-		return returnError(DataSeg);
+		return returnErrorStr(DataSeg);
 	}
 	char *output;
 	asm("pushad");
@@ -321,6 +344,7 @@ void V_Icu_NormalizeNFKCCF(int **Adr, int NumOfOpr, DWORD *DataSeg) {
 
 /**
  * split unicode string by whitespace
+ * return int
  */
 void V_Icu_SplitSimple(int **Adr, int NumOfOpr, DWORD *DataSeg) {
 	DWORD **Src, **Delimeter, **Int;
@@ -351,6 +375,9 @@ void V_Icu_SplitSimple(int **Adr, int NumOfOpr, DWORD *DataSeg) {
 	DataSeg[3] = 0;
 }
 
+/**
+ * return int
+ */
 void V_Icu_SplitUnicodeString(int **Adr, int NumOfOpr, DWORD *DataSeg) {
 	DWORD **Str, **Id, **Capacity;
 	char *string;
@@ -365,11 +392,14 @@ void V_Icu_SplitUnicodeString(int **Adr, int NumOfOpr, DWORD *DataSeg) {
 	UErrorCode status = listWordBoundaries(UnicodeString(string), id, capacity);
 	if(U_FAILURE(status)) {
 		Class->errorCode = status;
-		return returnError(DataSeg);
+		return returnErrorInt(DataSeg);
 	}
 	DataSeg[3] = 0;
 }
 
+/**
+ * return string
+ */
 void V_Icu_GetSplitStringByIndex(int **Adr, int NumOfOpr, DWORD *DataSeg) {
 	DWORD **Id, **Index;
 	V_Icu *Class  = (V_Icu*)Adr[2][2];
@@ -381,15 +411,19 @@ void V_Icu_GetSplitStringByIndex(int **Adr, int NumOfOpr, DWORD *DataSeg) {
 	std::map<int, UnicodeString**>::const_iterator got = splitBuffer.find (id);
 	if(got == splitBuffer.end()) {
 		Class->errorCode = (UErrorCode)SPLITBUFFER_UNDEFINED_ID;
-		return returnError(DataSeg);
+		return returnErrorStr(DataSeg);
 	}
 	UnicodeString **stringlist = splitBuffer[id];
 	UnicodeString *s = stringlist[index];
+	if(s == (UnicodeString*)-1) {
+		Class->errorCode = (UErrorCode)SPLITBUFFER_STRING_DOES_NOT_EXISTS;
+		return returnErrorStr(DataSeg);
+	}
 	int destCapacity = s->length() * 4;
 	char *tmp = new char[destCapacity];
 	s->extract(tmp, destCapacity, NULL, Class->errorCode);
 	if(Class->errorCode != U_ZERO_ERROR) {
-		return returnError(DataSeg);
+		return returnErrorStr(DataSeg);
 	}
 	char *output;
 	asm("pushad");
@@ -405,11 +439,69 @@ void V_Icu_GetSplitStringByIndex(int **Adr, int NumOfOpr, DWORD *DataSeg) {
 	DataSeg[1] = (DWORD)(output);
 }
 
+/**
+ * return int
+ */
+void V_Icu_GetSplitBufferSize(int **Adr, int NumOfOpr, DWORD *DataSeg) {
+	V_Icu *Class  = (V_Icu*)Adr[2][2];
+	DWORD **Id;
+	Id = (DWORD **)Adr[4+0];
+	int id;
+	id = (int)Id[0];
+	std::map<int, UnicodeString**>::const_iterator got = splitBuffer.find (id);
+	if(got == splitBuffer.end()) {
+		Class->errorCode = (UErrorCode)SPLITBUFFER_UNDEFINED_ID;
+		return returnErrorInt(DataSeg);
+	}
+	UnicodeString **stringlist = splitBuffer[id];
+	int i=0;
+	while((stringlist[i] != (UnicodeString*)EMPTY_STRING)
+		&&(stringlist[i] != (UnicodeString*)LAST_STRING)) {
+		i++;
+	}
+	Class->errorCode = U_ZERO_ERROR;
+	DataSeg[3] = i - 1;
+}
+
+/**
+ * return int
+ */
+void V_Icu_SplitBufferFree(int **Adr, int NumOfOpr, DWORD *DataSeg) {
+	V_Icu *Class  = (V_Icu*)Adr[2][2];
+	DWORD **Id;
+	Id = (DWORD **)Adr[4+0];
+	int id;
+	id = (int)Id[0];
+	std::map<int, UnicodeString**>::const_iterator got = splitBuffer.find (id);
+	if(got == splitBuffer.end()) {
+		Class->errorCode = (UErrorCode)SPLITBUFFER_UNDEFINED_ID;
+		return returnErrorInt(DataSeg);
+	}
+	UnicodeString **stringlist = splitBuffer[id];
+	splitBuffer.erase(id);
+	int i=0;
+	while((stringlist[i] != (UnicodeString*)EMPTY_STRING)
+		&&(stringlist[i] != (UnicodeString*)LAST_STRING)) {
+		delete stringlist[i];
+		stringlist[i] = 0;
+		i++;
+	}
+	delete [] stringlist;
+	stringlist = 0;
+	DataSeg[3] = 0;
+}
+
+/**
+ * return int
+ */
 void V_Icu_GetLastError(int **Adr, int NumOfOpr, DWORD *DataSeg) {
 	V_Icu *Class  = (V_Icu*)Adr[2][2];
 	DataSeg [3] = Class->getLastError();
 }
 
+/**
+ * return string
+ */
 void V_Icu_GetLastErrorName(int **Adr, int NumOfOpr, DWORD *DataSeg) {
 	V_Icu *Class  = (V_Icu*)Adr[2][2];
 	const char* err = Class->getErrorName();
@@ -454,6 +546,8 @@ Binary_Methods_STRUC V_Icu_STRUC_Methods[] =
 	"int SplitSimple string ptr string ptr int ptr", &V_Icu_SplitSimple,
 	"int SplitUnicodeString string ptr int ptr int ptr", &V_Icu_SplitUnicodeString,
 	"string ptr GetSplitStringByIndex int ptr int ptr", &V_Icu_GetSplitStringByIndex,
+	"int SplitBufferFree int ptr", &V_Icu_SplitBufferFree,
+	"int GetSplitBufferSize int ptr", &V_Icu_GetSplitBufferSize,
 	"int GetLastError", &V_Icu_GetLastError,
 	"string ptr GetLastErrorName", &V_Icu_GetLastErrorName,
 	NULL
@@ -471,6 +565,7 @@ V_Icu::V_Icu() : errorCode(U_ZERO_ERROR)
 	errorName[SPLITBUFFER_OUT_OF_MEMORY] = "Error out of memory during buffer prepare";
 	errorName[SPLITBUFFER_UNDEFINED_ERROR] = "Error undefined error during buffer prepare";
 	errorName[SPLITBUFFER_UNDEFINED_ID] = "Error splitbuffer undefined id";
+	errorName[SPLITBUFFER_STRING_DOES_NOT_EXISTS] = "Error requested string does not exists";
 }
 
 int V_Icu::getLastError() {
