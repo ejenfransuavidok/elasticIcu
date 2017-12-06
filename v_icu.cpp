@@ -679,7 +679,6 @@ V_ICU_API Binary_Methods_STRUC  **Init(const char ***Names, ELAST_FUNC *FuncTabl
         }else if(strcmp(FuncTable[i].Name, "realloc_ch") == 0){
            rrealloc_ch          = (rrealloc_chFT)FuncTable[i].Func;
         }
-
     }
     return MethodStrucTable;
 }

@@ -1,8 +1,11 @@
 include_file "/Projects/Studio/ElastLib/TUtf8.epl"
 include_file "/Projects/Studio/ElastLib/TIcu.epl"
+include_file "/Projects/Studio/ElastLib/TStemm.epl"
 //--------------
 
 TIcu @icu;
+
+TStemm @stemm;
 
 string lower = icu->ToLow("Türkiye Cumhuriyet Merkez Bankası (TCMB) bünyesinde faaliyette bulunan Bankalararası Para Piyasası’nda bankaların borç alabilme limitleri (BAL) 22 Kasım 2017 tarihinden geçerli olmak üzere gecelik vadede yapılan işlemler için (O/N) sıfıra düşürülmüştür.");
 string upper = icu->ToUp("Türkiye Cumhuriyet Merkez Bankası (TCMB) bünyesinde faaliyette bulunan Bankalararası Para Piyasası’nda bankaların borç alabilme limitleri (BAL) 22 Kasım 2017 tarihinden geçerli olmak üzere gecelik vadede yapılan işlemler için (O/N) sıfıra düşürülmüştür.");
@@ -117,5 +120,23 @@ Res = Utf8->SymIsDigit(Sym);
 print "Ret isDigit:" .Res. "\n";
 Res = Utf8->SymCategory(Sym);
 print "Category:" .Res. "\n";
+
+print "\nstemming START\n";
+string origText = "transportation";
+print "(English) Original text: " . origText . "\n";
+string stemmedText;
+int returnStem = stemm->doStemming(origText, stemmedText, LOCALE_ENGLISH);
+print "(English) Stemmed text: " . stemmedText . "\n";
+
+origText = "continuellement";
+print "(French) Original text: " . origText . "\n";
+returnStem = stemm->doStemming(origText, stemmedText, LOCALE_FRENCH);
+print "(French) Stemmed text: " . stemmedText . "\n";
+
+origText = "устроившия";
+print "(Russian) Original text: " . origText . "\n";
+returnStem = stemm->doStemming(origText, stemmedText, LOCALE_RUSSIAN);
+print "(Russian) Stemmed text: " . stemmedText . "\n";
+print "stemming END\n";
 
 print "==END==\n";

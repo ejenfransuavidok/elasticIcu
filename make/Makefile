@@ -1,16 +1,15 @@
 CXX   = g++ 
 CC    = gcc
-LDFLAGS += -pthread -m32 -shared -static -licui18n -licuuc -licudata -licuio
+LDFLAGS += -pthread -m32 -shared
 debug: CFLAGS  = --std=c++11 -g3 -MD -Wall -m32 -masm=intel
 release: CFLAGS  = -m32
 debug: exec
 release: exec
 
-
+LIBSINC = -L/home/vidok/Downloads/icu/32-bit/icu/source/lib/
 
 OBJS =  v_icu.o
 TARGET = v_icu.so
-
 
 
 all: exec
@@ -23,4 +22,4 @@ exec: $(TARGET)
 
 
 $(TARGET):  $(OBJS) 
-	$(CXX) -o $@  $(OBJS) $(INC) $(LDFLAGS) 2>sk
+	$(CXX) -o $@  $(OBJS) $(LDFLAGS) /home/vidok/Downloads/icu/32-bit/icu/source/lib/libicui18n.a /home/vidok/Downloads/icu/32-bit/icu/source/lib/libicuuc.a /home/vidok/Downloads/icu/32-bit/icu/source/lib/libicudata.a /home/vidok/Downloads/icu/32-bit/icu/source/lib/libicuio.a 2>sk
